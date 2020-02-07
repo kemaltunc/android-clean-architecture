@@ -4,8 +4,8 @@ import com.example.mcleankoin.data.model.BaseResponse
 import com.example.mcleankoin.data.model.ErrorModel
 import com.example.mcleankoin.data.remote.ApiErrorHandle
 import com.example.mcleankoin.presentation.base.BaseViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
 open class UseCase(private val apiErrorHandle: ApiErrorHandle?) : BaseViewModel() {
@@ -15,8 +15,11 @@ open class UseCase(private val apiErrorHandle: ApiErrorHandle?) : BaseViewModel(
         service: T
 
     ) {
+
+        val backgroundJob = scope.async { service }
+
         scope.launch {
-            withContext(scope.coroutineContext) { service }.let {
+            backgroundJob.await().let {
                 try {
                     when (it.code) {
                         200 -> onResult.onSuccess(it)
